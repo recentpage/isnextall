@@ -1,13 +1,16 @@
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import React, { useState } from "react";
 import Header from "../../components/Navbar/Header";
 import JobListItem from "../../components/partials/JobListItem";
 import PaginationNumeric from "../../components/partials/PaginationNumeric";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Createspacemodal from "../../components/models/Createspacemodal";
+import { PrismaClient } from "@prisma/client";
 
-export default function Spaces() {
+export default function Spaces({ allfields }: any) {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const handleClick = () => {
     setIsModalOpen(true);
   };
@@ -23,30 +26,11 @@ export default function Spaces() {
     router.push("/");
     return;
   }
-  const items = [
-    {
-      id: 0,
-      image: "/company-icon-05.svg",
-      company: "Company 01",
-      role: "Senior Web App Designer",
-      link: "/job/job-post",
-      details: "Contract / Remote / New York, NYC",
-      date: "Jan 4",
-      type: "Featured",
-      fav: false,
-    },
-    {
-      id: 1,
-      image: "/company-icon-05.svg",
-      company: "Company 02",
-      role: "Senior Full Stack Engineer",
-      link: "/job/job-post",
-      details: "Contract / Remote / New York, NYC",
-      date: "Jan 7",
-      type: "New",
-      fav: true,
-    },
-  ];
+
+  const items = allfields;
+  const filteredSpaces = items.filter((space: any) => {
+    return space.name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
@@ -105,7 +89,9 @@ export default function Spaces() {
                       id="job-search"
                       className="form-input w-full pl-9 focus:border-slate-300"
                       type="search"
-                      placeholder="Search job title or keyword…"
+                      placeholder="Search for a space"
+                      value={searchTerm}
+                      onChange={(event) => setSearchTerm(event.target.value)}
                     />
                     <button
                       className="absolute inset-0 right-auto group"
@@ -135,18 +121,18 @@ export default function Spaces() {
 
                 {/* Jobs list */}
                 <div className="space-y-2">
-                  {items.map((item) => {
+                  {filteredSpaces.map((fields: any) => {
                     return (
                       <JobListItem
-                        key={item.id}
-                        id={item.id}
-                        image={item.image}
-                        role={item.role}
-                        link={item.link}
-                        details={item.details}
-                        date={item.date}
-                        type={item.type}
-                        fav={item.fav}
+                        key={fields.id}
+                        id={fields.id}
+                        image={"/company-icon-01.svg"}
+                        name={fields.name}
+                        link=""
+                        company=""
+                        date={fields.date}
+                        type={fields.type}
+                        fav={fields.fav}
                       />
                     );
                   })}
@@ -164,3 +150,34 @@ export default function Spaces() {
     </div>
   );
 }
+
+export async function getServerSideProps({ req, res }: any) {
+  const session = await getSession({ req });
+  console.log(session);
+  const prisma = new PrismaClient();
+  // READ all notes from DB
+  const allfields = "";
+  if (session) {
+    const allfields = await prisma.space.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      where: {
+        // @ts-ignore
+        userId: session?.user?.id,
+      },
+    });
+    return {
+      props: {
+        allfields,
+      },
+    };
+  }
+
+  return {
+    props: {
+      allfields,
+    },
+  };
+};
