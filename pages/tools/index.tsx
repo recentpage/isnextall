@@ -1,31 +1,26 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import { PrismaClient } from "@prisma/client";
 
 export default function Tools({ alltools }: any) {
-  const { tools } = alltools;
+  const [searchTerm, setSearchTerm] = useState("");
+  const tools = alltools;
   const router = useRouter();
   const { data: session, status } = useSession();
-  if (status === 'loading') {
+  if (status === "loading") {
     return <p>Loading...</p>;
   }
-  if (status === 'unauthenticated') {
-    router.push('/');
+  if (status === "unauthenticated") {
+    router.push("/");
     return;
   }
 
-  // Use the useState hook to manage the search query
-  const [search, setSearch] = useState('');
-
-  // Filter the list of tools based on the search query
-  const filteredTools = tools.filter((tool: any) => {
-    return (
-      tool.name.toLowerCase().includes(search.toLowerCase()) ||
-      tool.description.toLowerCase().includes(search.toLowerCase())
-    );
+  const filteredTools = tools.filter((space: any) => {
+    return space.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
@@ -132,7 +127,9 @@ export default function Tools({ alltools }: any) {
                 <input
                   id="action-search"
                   className="form-input pl-9 py-3 focus:border-slate-300 w-full"
-                  type="search"
+                  type="Find Tool"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
                 />
                 <button
                   className="absolute inset-0 right-auto group"
@@ -214,7 +211,7 @@ export default function Tools({ alltools }: any) {
                         <div>
                           <a
                             className="text-sm font-medium text-indigo-500 hover:text-indigo-600"
-                            href="/tools/${tool.slug}"
+                            href={`/tools/${tool.slug}`}
                           >
                             Explore -&gt;
                           </a>
@@ -235,16 +232,14 @@ export default function Tools({ alltools }: any) {
 export async function getServerSideProps({ req, res }: any) {
   const prisma = new PrismaClient();
   try {
-    const alltools = await prisma.tools.findMany(
-      {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          description: true,
-        },
+    const alltools = await prisma.tools.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
       },
-    );
+    });
     return {
       props: {
         alltools,
