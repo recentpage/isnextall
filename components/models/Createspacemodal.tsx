@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import Modal from "react-modal";
+import { useRouter } from "next/router";
 
 const Createspacemodal = ({ isOpen, onRequestClose }: any) => {
   const [name, setName] = useState("");
 
+  const router = useRouter();
+
   const session = useSession();
-  console.log(session)
 
   const customStyles = {
     content: {
@@ -31,6 +33,10 @@ const Createspacemodal = ({ isOpen, onRequestClose }: any) => {
         },
         body: JSON.stringify(name),
       });
+      const data = await response.json();
+      console.log(data);
+      router.reload();
+      return ;
     } catch (error) {
       console.error(error);
     }
