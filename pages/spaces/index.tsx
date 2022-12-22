@@ -28,6 +28,7 @@ export default function Spaces({ allfields }: any) {
   }
 
   const items = allfields;
+  const totalItems = items.length;
   const filteredSpaces = items.filter((space: any) => {
     return space.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
@@ -113,7 +114,7 @@ export default function Spaces({ allfields }: any) {
                 {/* Jobs header */}
                 <div className="flex justify-between items-center mb-4">
                   <div className="text-sm text-slate-500 italic">
-                    Showing 289 Jobs
+                    Showing {totalItems} spaces
                   </div>
                   {/* Sort */}
                   <div className="text-sm"></div>
@@ -180,4 +181,4 @@ export async function getServerSideProps({ req, res }: any) {
       allfields,
     },
   };
-};
+}
