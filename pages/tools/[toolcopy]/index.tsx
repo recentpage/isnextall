@@ -1,19 +1,57 @@
 import React from "react";
 import Link from "next/link";
 import { CustomEditor } from "../../../components/editor/CustomEditor";
+import { useRouter } from "next/router";
 
 function Toolcopy() {
+  const router = useRouter();
+  const { toolcopy } = router.query;
+  const [copy, setCopy] = React.useState<string | null>(null);
+
+  const [data, setData] = React.useState<any>(null);
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch(`/api/tools/${toolcopy}`);
+      const json = await res.json();
+      setData(json);
+    };
+    if (toolcopy != undefined) {
+      fetchData();
+    }
+  }, [toolcopy]);
+
+  if (!data) {
+    return <div>Loading...</div>;
+  } else {
+    console.log(data);
+  }
   const addtoeditor = async (event: any) => {
     alert("ll");
   };
-  const handleSubmit = async (event: any) => {
+  const handleSubmit = async(event: any) => {
     event.preventDefault();
-    const data = {
-      productname: event.target.productname.value,
-      productcharacteristics: event.target.productcharacteristics.value,
-    };
-    console.log(data);
-    alert("control j was clicked ${data}");
+    try {
+      // dont use form dATA
+      const productname = event.target.productname.value;
+      const productcharacteristics = event.target.productcharacteristics.value;
+
+      const response = await fetch("/api/getcopy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productname: productname,
+          productcharacteristics: productcharacteristics,
+        }),
+      });
+      const data = await response.json();
+      console.log(data);
+      setCopy(data.generatedCopy);
+      return;
+    } catch (error) {
+      console.error(error);
+    }
   };
   return (
     <main className="bg-white">
@@ -94,6 +132,7 @@ function Toolcopy() {
                       </label>
                       <input
                         id="productname"
+                        name="productname"
                         className="form-input w-full"
                         type="text"
                       />
@@ -108,6 +147,7 @@ function Toolcopy() {
                       </label>
                       <textarea
                         id="productcharacteristics"
+                        name="productcharacteristics"
                         className="form-input w-full"
                         rows={4}
                         cols={4}
@@ -120,7 +160,11 @@ function Toolcopy() {
                       >
                         Country <span className="text-rose-500">*</span>
                       </label>
-                      <select id="country" className="form-select w-full">
+                      <select
+                        id="country"
+                        name="country"
+                        className="form-select w-full"
+                      >
                         <option>USA</option>
                         <option>Italy</option>
                         <option>United Kingdom</option>
