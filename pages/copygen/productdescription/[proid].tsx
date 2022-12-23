@@ -7,15 +7,9 @@ import { useSession } from "next-auth/react";
 function Productdescription() {
   const session = useSession();
   const router = useRouter();
-  const [pageid, setPageid] = useState<any>(null);
-  useEffect(() => {
-    if (router.query.proid != "blank") {
-      setPageid(router.query.proid);
-    }
-  }, [router.query.proid]);
-  console.log(pageid);
   const [loading, setLoading] = useState(false);
   const [copys, setCopys] = useState<any>([]);
+  const [editor, setEditor] = useState<any>(null);
   if (session.status === "loading") {
     return <div>loading...</div>;
   }
@@ -24,7 +18,7 @@ function Productdescription() {
     setLoading(true);
     event.preventDefault();
     try {
-      const docid = router.query.docid;
+      const proid = router.query.proid;
       const productname = event.target.productname.value;
       const productcharacteristics = event.target.productcharacteristics.value;
 
@@ -34,7 +28,7 @@ function Productdescription() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          docid: docid,
+          docid: proid,
           productname: productname,
           productcharacteristics: productcharacteristics,
         }),
