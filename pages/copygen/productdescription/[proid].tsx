@@ -28,24 +28,15 @@ function Productdescription() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          docid: proid,
+          proid: proid,
           productname: productname,
           productcharacteristics: productcharacteristics,
         }),
       });
       console.log(response);
       const data = await response.json();
-      const results = data.text.split("\n");
-      for (let i = 0; i < results.length; i++) {
-        const words = results[i].split(" ");
-        if (words.length < 3) {
-          results.splice(i, 1);
-          i--;
-        }
-      }
       console.log(data);
-      console.log(results);
-      setCopys(results);
+      setCopys(data);
       setLoading(false);
       toast("Your Copy Was Genrated", {
         hideProgressBar: true,

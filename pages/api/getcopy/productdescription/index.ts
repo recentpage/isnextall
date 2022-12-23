@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const openai = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { docid, productname, productcharacteristics } = req.body;
+  const { proid, productname, productcharacteristics } = req.body;
   const configuration = new Configuration({
     apiKey: "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",
   });
@@ -20,34 +20,51 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
       temperature: 0,
     });
 
-    let docsid = "";
-    // use prisma and save the response to the database first toolgen table and then copys table
-    if (docid == "") {
-      const toolgen = await prisma.toolgens.create({
-        data: {
-          docname: "untitled",
-          doctool: "productdescription",
-          toolId: 1,
-        },
-      });
-      console.log(toolgen);
-      const docsid = toolgen.id;
-    } else {
-      const docsid = parseInt(docid);
+    if (response.status === 200) {
+      let text = response.data.choices[0].text;
+      // split the text into 3 variations by \n
+      let variations = text?.split("\n");
+      // use for and map to get the variations
+      if (variations) {
+        for (let i = 0; i < variations.length; i++) {
+          let words = variations[i].split(" ");
+          if (words.length < 3) {
+            variations.splice(i, 1);
+            i++;
+          }
+        }
+      }
+      console.log(variations);
+      // use prisma and save the response to the database first toolgen table and then copys table
+      if (proid === "blank") {
+        const toolgen = await prisma.toolgen.create({
+          data: {
+            title: "Untitled",
+            toolId: 1,
+            spaceId: 1,
+          },
+        });
+        const copys = await prisma.copygen.create({
+          data: {
+            text: response.data.choices[0].text,
+            toolgenId: toolgen.id,
+          },
+        });
+      } else {
+        const copys = await prisma.copygen.create({
+          data: {
+            text: response.data.choices[0].text,
+            toolgenId: parseInt(proid),
+          },
+        });
+
+        res.status(200).json({
+          text: response.data.choices[0].text,
+          model: response.data.model,
+          token: response.data,
+        });
+      }
     }
-
-    const copys = await prisma.copys.create({
-      data: {
-        text: response.data.choices[0].text,
-        toolgenId: docsid,
-      },
-    });
-
-    res.status(200).json({
-      text: response.data.choices[0].text,
-      model: response.data.model,
-      token: response.data,
-    });
   } catch (error) {
     //@ts-ignore
     res.status(500).json({ error: error.message });
