@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 function Toolcopy() {
   const router = useRouter();
   const { toolcopy } = router.query;
-  const [copy, setCopy] = React.useState<string | null>(null);
+  const [copys, setCopy] = React.useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
 
@@ -22,6 +22,15 @@ function Toolcopy() {
       fetchData();
     }
   }, [toolcopy]);
+
+  const copyItem = (text: any) => {
+    toast("Copied Successfully", {
+      hideProgressBar: true,
+      autoClose: 2000,
+      type: "success",
+    });
+    navigator.clipboard.writeText(text);
+  };
 
   const handleSubmit = async (event: any) => {
     setLoading(true);
@@ -66,10 +75,10 @@ function Toolcopy() {
   };
 
   useEffect(() => {
-    if (outputRef.current && copy) {
-      outputRef.current.innerHTML = copy;
+    if (outputRef.current && copys) {
+      outputRef.current.innerHTML = copys;
     }
-  }, [copy]);
+  }, [copys]);
 
   if (!data) {
     return <div>Loading...</div>;
@@ -210,9 +219,9 @@ function Toolcopy() {
               </div>
             </div>
             {/* items */}
-            {Array.isArray(copy) && (
+            {Array.isArray(copys) && (
               <div>
-                {copy.map((text, index) => (
+                {copys.map((text, index) => (
                   <div
                     key={index}
                     className="flex items-start px-8 mb-4 last:mb-0"
@@ -221,6 +230,7 @@ function Toolcopy() {
                       <div id="flexi">{text}</div>
                       <div className="flex pl-96 pt-4 justify-items-end justify-between">
                         <svg
+                          onClick={() => copyItem(text)}
                           className="w-6 h-6"
                           fill="none"
                           stroke="currentColor"
