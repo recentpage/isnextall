@@ -163,7 +163,11 @@ export default function Tools({ alltools }: any) {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-2 lg:sidebar-expanded:grid-cols-2 xl:sidebar-expanded:grid-cols-2 gap-6">
                   {/* Item */}
                   {filteredTools.map((tool: any) => (
-                    <div id={`toolset${tool.id}`} key={`toolset${tool.id}`} className="bg-orange-100 rounded-sm text-center p-5">
+                    <div
+                      id={`toolset${tool.id}`}
+                      key={`toolset${tool.id}`}
+                      className="bg-orange-100 rounded-sm text-center p-5"
+                    >
                       <div className="flex flex-col h-full">
                         <div className="grow mb-2">
                           {/* Icon */}
