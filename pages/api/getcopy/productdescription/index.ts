@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const openai = async (req: NextApiRequest, res: NextApiResponse) => {
   const { proid, productname, productcharacteristics } = req.body;
   const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: "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",
   });
   const api = new OpenAIApi(configuration);
   const prompt = `Generate a product description for a product with the following attributes: product name = '${productname}', product description = '${productcharacteristics}'. Make sure to include details about the product's features and benefits. genrate 3 variations of the product description.`;
@@ -23,19 +23,20 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
     if (response.status === 200) {
       let text = response.data.choices[0].text;
       // split the text into 3 variations by \n
-      let variations = text?.split("\n");
+      const variations = text?.split("\n");
+      // console.log(variations);
       // use for and map to get the variations
+      let variationsArray: any = [];
+      let newVariationsArray: any = [];
       if (variations) {
-        for (let i = 0; i < variations.length; i++) {
-          let words = variations[i].split(" ");
-          if (words.length < 3) {
-            variations.splice(i, 1);
-            i++;
+        variationsArray = variations.map((element) => {
+          if (element.split(" ").length > 3) {
+            newVariationsArray.push(element);
           }
-        }
+        });
       }
-      console.log(variations);
-      // use prisma and save the response to the database first toolgen table and then copys table
+      let status = "";
+      let act = "";
       if (proid === "blank") {
         const toolgen = await prisma.toolgen.create({
           data: {
@@ -44,26 +45,36 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
             spaceId: 1,
           },
         });
-        const copys = await prisma.copygen.create({
-          data: {
-            text: response.data.choices[0].text,
-            toolgenId: toolgen.id,
-          },
-        });
+        if (toolgen.id) {
+          if (newVariationsArray.length > 0) {
+            newVariationsArray.map(async (e: any) => {
+              const copys = await prisma.copygen.create({
+                data: {
+                  text: e,
+                  toolgenId: toolgen.id,
+                },
+              });
+            });
+          }
+        }
+        status = "success";
+        act = "create";
       } else {
-        const copys = await prisma.copygen.create({
-          data: {
-            text: response.data.choices[0].text,
-            toolgenId: parseInt(proid),
-          },
-        });
-
-        res.status(200).json({
-          text: response.data.choices[0].text,
-          model: response.data.model,
-          token: response.data,
-        });
+        if (newVariationsArray.length > 0) {
+          newVariationsArray.map(async (e: any) => {
+            console.log(proid);
+            const copys = await prisma.copygen.create({
+              data: {
+                text: e,
+                toolgenId: parseInt(proid),
+              },
+            });
+          });
+        }
+        status = "success";
+        act = "update";
       }
+      res.status(200).json({ status, act });
     }
   } catch (error) {
     //@ts-ignore
