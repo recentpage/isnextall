@@ -67,21 +67,42 @@ model Fields {
 }
 
 model Space {
-    id        Int      @id @default(autoincrement())
+    id        Int       @id @default(autoincrement())
     name      String
     userId    String
-    createdAt DateTime @default(now())
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime  @default(now())
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    Toolgen   Toolgen[]
 }
 
 model Tools {
-  id          Int       @id @default(autoincrement())
-  name        String?
-  description String?
-  slug        String?
-  category    String?
-  status      String?
-  imageUrl    String?
-  model       String?
-  createdAt   DateTime  @default(now())
+    id          Int       @id @default(autoincrement())
+    name        String?
+    description String?
+    slug        String?
+    category    String?
+    status      String?
+    imageUrl    String?
+    model       String?
+    createdAt   DateTime  @default(now())
+    Toolgen     Toolgen[]
+}
+
+model Toolgen {
+    id        Int       @id @default(autoincrement())
+    title     String?
+    toolId    Int
+    spaceId   Int
+    createdAt DateTime  @default(now())
+    tool      Tools     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+    space     Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+    Copygen   Copygen[]
+}
+
+model Copygen {
+    id        Int      @id @default(autoincrement())
+    text      String?
+    toolgenId Int
+    createdAt DateTime @default(now())
+    toolgen   Toolgen  @relation(fields: [toolgenId], references: [id], onDelete: Cascade)
 }
