@@ -154,7 +154,6 @@ export default function Spaces({ allfields }: any) {
 
 export async function getServerSideProps({ req, res }: any) {
   const session = await getSession({ req });
-  console.log(session);
   const prisma = new PrismaClient();
   // READ all notes from DB
   const allfields = "";
