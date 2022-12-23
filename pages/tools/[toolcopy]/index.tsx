@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CustomEditor } from "../../../components/editor/CustomEditor";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
 function Toolcopy() {
   const router = useRouter();
@@ -52,7 +53,12 @@ function Toolcopy() {
       console.log(data);
       console.log(results);
       setCopy(results);
-
+      setLoading(false);
+      toast("Your Copy Was Genrated", {
+        hideProgressBar: true,
+        autoClose: 2000,
+        type: "success",
+      });
       return;
     } catch (error) {
       console.error(error);
@@ -62,7 +68,6 @@ function Toolcopy() {
   useEffect(() => {
     if (outputRef.current && copy) {
       outputRef.current.innerHTML = copy;
-      setLoading(false);
     }
   }, [copy]);
 
