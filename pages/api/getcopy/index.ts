@@ -4,22 +4,23 @@ import { NextApiRequest, NextApiResponse } from "next";
 const openai = async (req: NextApiRequest, res: NextApiResponse) => {
   const { productname, productcharacteristics } = req.body;
   const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: "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",
   });
   const api = new OpenAIApi(configuration);
-  const prompt = `Generate a product description for a product with the following attributes: product name = '${productname}', product description = '${productcharacteristics}'. Make sure to include details about the product's features and benefits.`;
-
+  const prompt = `Generate a product description for a product with the following attributes: product name = '${productname}', product description = '${productcharacteristics}'. Make sure to include details about the product's features and benefits. genrate 3 variations of the product description.`;
+  console.log(prompt);
   try {
     const response = await api.createCompletion({
       model: "text-davinci-003",
       prompt: prompt,
-      max_tokens: 60,
+      max_tokens: 270,
       temperature: 0,
     });
 
     res.status(200).json({
       text: response.data.choices[0].text,
       model: response.data.model,
+      token: response.data,
     });
   } catch (error) {
     //@ts-ignore

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CustomEditor } from "../../../components/editor/CustomEditor";
 import { useRouter } from "next/router";
@@ -7,6 +7,8 @@ function Toolcopy() {
   const router = useRouter();
   const { toolcopy } = router.query;
   const [copy, setCopy] = React.useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const outputRef = useRef<HTMLDivElement>(null);
 
   const [data, setData] = React.useState<any>(null);
   React.useEffect(() => {
@@ -20,15 +22,8 @@ function Toolcopy() {
     }
   }, [toolcopy]);
 
-  if (!data) {
-    return <div>Loading...</div>;
-  } else {
-    console.log(data);
-  }
-  const addtoeditor = async (event: any) => {
-    alert("ll");
-  };
-  const handleSubmit = async(event: any) => {
+  const handleSubmit = async (event: any) => {
+    setLoading(true);
     event.preventDefault();
     try {
       // dont use form dATA
@@ -46,12 +41,38 @@ function Toolcopy() {
         }),
       });
       const data = await response.json();
+      const results = data.text.split("\n");
+      for (let i = 0; i < results.length; i++) {
+        const words = results[i].split(" ");
+        if (words.length < 3) {
+          results.splice(i, 1);
+          i--;
+        }
+      }
       console.log(data);
-      setCopy(data.generatedCopy);
+      console.log(results);
+      setCopy(results);
+
       return;
     } catch (error) {
       console.error(error);
     }
+  };
+
+  useEffect(() => {
+    if (outputRef.current && copy) {
+      outputRef.current.innerHTML = copy;
+      setLoading(false);
+    }
+  }, [copy]);
+
+  if (!data) {
+    return <div>Loading...</div>;
+  } else {
+    console.log(data);
+  }
+  const addtoeditor = async (event: any) => {
+    alert("ll");
   };
   return (
     <main className="bg-white">
@@ -177,288 +198,86 @@ function Toolcopy() {
                       accessKey="j"
                       className="font-bold rounded-xl text-xl btn bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-pink-500 hover:to-blue-500 text-white ml-auto w-full"
                     >
-                      Generate Copy
+                      {loading ? "Loading..." : "Generate Copy"}
                     </button>
                   </div>
                 </form>
               </div>
             </div>
-            <div className="flex items-start px-8 mb-4 last:mb-0">
-              <div className="font-bold text-sm bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white p-3 rounded-lg rounded-tl-none border border-transparent shadow-md mb-1">
-                <div id="flexi">
-                  Sed euismod nisi porta lorem mollis. Tellus elementum sagittis
-                  vitae et leo duis. Viverra justo nec ultrices dui. Sed lectus
-                  vestibulum mattis ullamcorper velit sed. Ut sem nulla pharetra
-                  diam sit amet 🎁
-                </div>
-                <div className="flex pl-96 pt-4 justify-items-end justify-between">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+            {/* items */}
+            {Array.isArray(copy) && (
+              <div>
+                {copy.map((text, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start px-8 mb-4 last:mb-0"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    onClick={addtoeditor}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
+                    <div className="font-bold text-sm bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white p-3 rounded-lg rounded-tl-none border border-transparent shadow-md mb-1">
+                      <div id="flexi">{text}</div>
+                      <div className="flex pl-96 pt-4 justify-items-end justify-between">
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                          />
+                        </svg>
+                        <svg
+                          className="w-6 h-6"
+                          onClick={addtoeditor}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="flex items-start px-8 mb-4 last:mb-0">
-              <div className="font-bold text-sm bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white p-3 rounded-lg rounded-tl-none border border-transparent shadow-md mb-1">
-                <div>
-                  Sed euismod nisi porta lorem mollis. Tellus elementum sagittis
-                  vitae et leo duis. Viverra justo nec ultrices dui. Sed lectus
-                  vestibulum mattis ullamcorper velit sed. Ut sem nulla pharetra
-                  diam sit amet 🎁
-                </div>
-                <div className="flex pl-96 pt-4 justify-items-end justify-between">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    onClick={addtoeditor}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start px-8 mb-4 last:mb-0">
-              <div className="font-bold text-sm bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white p-3 rounded-lg rounded-tl-none border border-transparent shadow-md mb-1">
-                <div>
-                  Sed euismod nisi porta lorem mollis. Tellus elementum sagittis
-                  vitae et leo duis. Viverra justo nec ultrices dui. Sed lectus
-                  vestibulum mattis ullamcorper velit sed. Ut sem nulla pharetra
-                  diam sit amet 🎁
-                </div>
-                <div className="flex pl-96 pt-4 justify-items-end justify-between">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    onClick={addtoeditor}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start px-8 mb-4 last:mb-0">
-              <div className="font-bold text-sm bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white p-3 rounded-lg rounded-tl-none border border-transparent shadow-md mb-1">
-                <div>
-                  Sed euismod nisi porta lorem mollis. Tellus elementum sagittis
-                  vitae et leo duis. Viverra justo nec ultrices dui. Sed lectus
-                  vestibulum mattis ullamcorper velit sed. Ut sem nulla pharetra
-                  diam sit amet 🎁
-                </div>
-                <div className="flex pl-96 pt-4 justify-items-end justify-between">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                    />
-                  </svg>
-                  <svg
-                    className="w-6 h-6"
-                    onClick={addtoeditor}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
