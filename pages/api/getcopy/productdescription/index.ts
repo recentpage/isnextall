@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const openai = async (req: NextApiRequest, res: NextApiResponse) => {
   const { proid, toneofvoice, productname, productcharacteristics } = req.body;
   const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: "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",
   });
   const api = new OpenAIApi(configuration);
   const prompt = `Generate a product description for a product with the following attributes: product name = '${productname}', product description = '${productcharacteristics}'. Make sure to include details about the product's features and benefits.use Tone of voice = '${toneofvoice}'. genrate 3 variations of the product description.`;
@@ -72,7 +72,7 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
         }
         status = "success";
         act = "create";
-        proidnew = (toolgen.id).toString();
+        proidnew = toolgen.id.toString();
       } else {
         const addProductdescription = await prisma.productdescription.update({
           where: {

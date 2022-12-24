@@ -19,6 +19,7 @@ function Productdescription({
   const [doctitle, setDoctitle] = useState("");
   const session = useSession();
   const router = useRouter();
+  console.log(router.query.proid);
   const [loading, setLoading] = useState(false);
   const [edit, setEdit] = useState("");
   const [editor, setEditor] = useState<any>(null);

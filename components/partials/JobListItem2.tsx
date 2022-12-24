@@ -1,30 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify";
 
 function JobListItem(props: any) {
   const router = useRouter();
-  const selectSpace = async (id: any) => {
-    try {
-      const res = await fetch(`/api/spaces/select/${id}`, {
-        method: "GET",
-      });
-
-      const data = await res.json();
-      console.log(res);
-      if (data.selected == "true") {
-        toast("Space selected", {
-          hideProgressBar: true,
-          type: "success",
-        });
-        router.push("/spaces");
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const deleteSpace = async (id: any) => {
     if (!confirm("Are you sure you want to delete this space?")) {
       return;
@@ -33,31 +12,15 @@ function JobListItem(props: any) {
       const res = await fetch(`/api/spaces/${id}`, {
         method: "DELETE",
       });
-      const data = await res.json();
-      if (data.error) {
-        toast(data.error, {
-          hideProgressBar: true,
-          autoClose: 2000,
-          type: "error",
-        });
-      }
-      if (data.status === "1") {
-        toast("Space deleted", {
-          hideProgressBar: true,
-          autoClose: 2000,
-          type: "success",
-        });
+      console.log(res);
+      if (!res.ok) {
+        alert("Something went wrong");
+        throw new Error("Something went wrong");
+      } else if (res.ok) {
         router.push("/spaces");
       }
     } catch (error) {
-      toast(
-        "Error deleting space. Please try again later or contact support.",
-        {
-          hideProgressBar: true,
-          autoClose: 2000,
-          type: "error",
-        }
-      );
+      console.error(error);
     }
   };
   return (
@@ -90,10 +53,44 @@ function JobListItem(props: any) {
             <div className="text-sm">id : {props.id}</div>
           </div>
         </div>
+        <div className="flex">
+          <div className="text-sm text-slate-500 italic whitespace-nowrap">
+            {props.toolname}
+          </div>
+        </div>
+        {/* Right side */}
         <div className="flex items-center space-x-4 pl-10 md:pl-0">
           <div className="text-sm text-slate-500 italic whitespace-nowrap">
             {/* {props.date} */}
           </div>
+          {props.type && (
+            <div
+              className={`text-xs inline-flex font-medium rounded-full text-center px-2.5 py-1 ${
+                props.type === "Featured"
+                  ? "bg-amber-100 text-amber-600"
+                  : "bg-emerald-100 text-emerald-600"
+              }`}
+            >
+              {props.type}
+            </div>
+          )}
+          <button
+            className={`${
+              props.fav
+                ? "text-amber-500"
+                : "text-slate-300 hover:text-slate-400"
+            }`}
+          >
+            <span className="sr-only">Bookmark</span>
+            <svg
+              className="w-3 h-4 fill-current"
+              width="12"
+              height="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M2 0C.9 0 0 .9 0 2v14l6-3 6 3V2c0-1.1-.9-2-2-2H2Z" />
+            </svg>
+          </button>
           <button
             onClick={() => deleteSpace(props.id)}
             className={`${
@@ -118,17 +115,6 @@ function JobListItem(props: any) {
               ></path>
             </svg>
           </button>
-        </div>
-        {/* Right side */}
-        <div className="flex">
-          <div className="text-sm text-slate-500 italic whitespace-nowrap">
-            <button
-              className="btn bg-orange-500 text-white"
-              onClick={() => selectSpace(props.id)}
-            >
-              Select
-            </button>
-          </div>
         </div>
       </div>
     </div>

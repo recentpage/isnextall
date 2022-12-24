@@ -6,26 +6,36 @@ export default async function deleteSpace(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getSession({ req });;
+  const session = await getSession({ req });
   if (!session) {
     return res.status(401).json({ error: "Not authenticated" });
   }
 
-  const deleteid:any = req.query.deleteid;
+  const deleteid: any = req.query.deleteid;
   if (!deleteid) {
     return res.status(400).json({ error: "No id provided" });
   }
 
   const prisma = new PrismaClient();
-  try {
-    await prisma.space.delete({
-      where: {
-        id: parseInt(deleteid),
-      },
-    });
-    res.status(200).end();
-  } catch (error) {
-    console.error(error);
-    res.status(500).end();
+  // check if space selected is true if true set massage to select another space and return
+  const space = await prisma.space.findUnique({
+    where: {
+      id: parseInt(deleteid),
+    },
+  });
+  if (space?.selected === "true") {
+    return res.status(400).json({ error: "Select another space" });
+  } else {
+    try {
+      const spacedelete = await prisma.space.delete({
+        where: {
+          id: parseInt(deleteid),
+        },
+      });
+      res.status(200).json({ status: "1", message: "Space deleted" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).end();
+    }
   }
 }

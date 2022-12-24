@@ -70,6 +70,7 @@ model Space {
     id        Int       @id @default(autoincrement())
     name      String
     userId    String
+    selected  String?   @default("false")
     createdAt DateTime  @default(now())
     user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     Toolgen   Toolgen[]
