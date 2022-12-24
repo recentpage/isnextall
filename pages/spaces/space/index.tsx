@@ -62,7 +62,7 @@ export default function Space({ saved }: any) {
                 </svg>
                 <Link href={`${baseurl}/tools`}>
                   <span className="hidden font-semibold text-lg xs:block ml-2">
-                    Create Space
+                    Create Copy
                   </span>
                 </Link>
               </button>
