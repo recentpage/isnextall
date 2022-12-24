@@ -83,7 +83,7 @@ function JobListItem(props: any) {
           <div>
             <Link
               className="inline-flex font-semibold text-slate-800"
-              href={props.link}
+              href={props.link+"/"+props.id}
             >
               {props.name}
             </Link>
