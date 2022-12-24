@@ -65,6 +65,14 @@ function JobListItem(props: any) {
           type: "error",
         });
       }
+      if (data.status === "2") {
+        toast("Removed marked as saved", {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "success",
+        });
+        router.replace(router.asPath);
+      }
       if (data.status === "1") {
         toast("Genration marked as saved", {
           hideProgressBar: true,
@@ -234,11 +242,8 @@ function JobListItem(props: any) {
             <svg
               className="w-6 h-6"
               {...(props.isSaved == "true"
-                ? { fill: "currentColor" }
-                : { fill: "none" })}
-              {...(props.isSaved == "true"
-                ? { stroke: "green" }
-                : { stroke: "none" })}
+                ? { fill: "" }
+                : { fill: "currentColor" })}
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >

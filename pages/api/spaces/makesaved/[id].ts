@@ -17,14 +17,38 @@ export default async function handler(
 
   const { id } = req.query;
 
-  const toolgen = await prisma.toolgen.update({
+  // if isSaved is true, then set it to false
+  // if isSaved is false, then set it to true
+
+  let status = "";
+
+  const toolgencheck = await prisma.toolgen.findUnique({
     where: {
       id: Number(id),
     },
-    data: {
-      isSaved: "true",
-    },
   });
 
-  res.status(200).json({ status: "1" });
+  if (toolgencheck?.isSaved === "true") {
+    const toolgen = await prisma.toolgen.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        isSaved: "false",
+      },
+    });
+    status = "2";
+  } else if (toolgencheck?.isSaved === "false") {
+    const toolgen = await prisma.toolgen.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        isSaved: "true",
+      },
+    });
+    status = "1";
+  }
+
+  res.status(200).json({ status: status });
 }
