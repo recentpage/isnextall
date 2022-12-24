@@ -226,6 +226,11 @@ function Productdescription({
   };
 
   const deleteCopy = async (id: any) => {
+    //make confirm alert
+    const confirm = window.confirm("Are You Sure You Want To Delete This Copy");
+    if (!confirm) {
+      return;
+    }
     const response = await fetch("/api/getcopy/productdescription/deletecopy", {
       method: "POST",
       headers: {
