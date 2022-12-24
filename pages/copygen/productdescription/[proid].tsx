@@ -7,12 +7,31 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-function Productdescription({ copy }: any) {
+function Productdescription({
+  formattedCopy,
+  productdescription,
+  toolgen,
+}: any) {
+  console.log(formattedCopy);
+  const [productname, setProductname] = useState("");
+  const [productcharacteristics, setProductcharacteristics] = useState("");
+  const [toneofvoice, setToneofvoice] = useState("");
+  const [doctitle, setDoctitle] = useState("");
   const session = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [copys, setCopys] = useState<any>([]);
+  const [edit, setEdit] = useState("");
   const [editor, setEditor] = useState<any>(null);
+  useEffect(() => {
+    if (toolgen != null && toolgen[0].title != null && toolgen.length > 0) {
+      setDoctitle(toolgen[0].title);
+    }
+    if (productdescription != null && productdescription.length > 0) {
+      setProductname(productdescription[0].productname);
+      setProductcharacteristics(productdescription[0].productcharacteristics);
+      setToneofvoice(productdescription[0].toneofvoice);
+    }
+  }, [productdescription, toolgen]);
   if (session.status === "loading") {
     return <div>loading...</div>;
   }
@@ -24,6 +43,7 @@ function Productdescription({ copy }: any) {
       const proid = router.query.proid;
       const productname = event.target.productname.value;
       const productcharacteristics = event.target.productcharacteristics.value;
+      const toneofvoice = event.target.toneofvoice.value;
 
       const response = await fetch("/api/getcopy/productdescription", {
         method: "POST",
@@ -34,23 +54,67 @@ function Productdescription({ copy }: any) {
           proid: proid,
           productname: productname,
           productcharacteristics: productcharacteristics,
+          toneofvoice: toneofvoice,
         }),
       });
       console.log(response);
       const data = await response.json();
       console.log(data);
-      setCopys(data);
+      console.log(data.status);
       setLoading(false);
-      toast("Your Copy Was Genrated", {
-        hideProgressBar: true,
-        autoClose: 2000,
-        type: "success",
-      });
-      return;
+      if (data.status == "success") {
+        toast("Your Copy Was Genrated", {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "success",
+        });
+        if (data.act == "update") {
+          router.push("/copygen/productdescription/" + proid);
+        } else {
+          router.push("/copygen/productdescription/" + data.proid);
+        }
+        return;
+      }
     } catch (error) {
       console.error(error);
     }
   }
+
+  const handletitle = async (event: any) => {
+    // save title to db using api
+    const proid = router.query.proid;
+    if (proid == "blank") {
+      toast("Please Genrate Product Description First", {
+        hideProgressBar: true,
+        autoClose: 2000,
+        type: "error",
+      });
+      return;
+    }
+    const title = doctitle;
+    const updatetitle = await fetch(
+      "/api/getcopy/productdescription/updatetitle",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          proid: proid,
+          title: title,
+        }),
+      }
+    );
+    const data = await updatetitle.json();
+    if (data.status == "success" && data.act == "update") {
+      toast("Title Updated", {
+        hideProgressBar: true,
+        autoClose: 2000,
+        type: "success",
+      });
+    }
+  };
+
   const copyItem = (text: any) => {
     toast("Copied Successfully", {
       hideProgressBar: true,
@@ -58,6 +122,130 @@ function Productdescription({ copy }: any) {
       type: "success",
     });
     navigator.clipboard.writeText(text);
+  };
+
+  const saveCopy = async (id: any) => {
+    // get copy text area value
+    if (edit == null || edit == "") {
+      toast("Please Edit First", {
+        hideProgressBar: true,
+        autoClose: 2000,
+        type: "error",
+      });
+      return;
+    }
+    const copy = edit;
+    const proid = router.query.proid;
+    if (edit) {
+      const response = await fetch("/api/getcopy/productdescription/editcopy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          proid: proid,
+          id: id,
+          copy: copy,
+        }),
+      });
+      const data = await response.json();
+      if (data.status == "success" && data.act == "update") {
+        toast("Copy Saved", {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "success",
+        });
+        router.replace(router.asPath);
+        // hide text area and show text
+        const text = document.getElementById("textvalue" + id);
+        const textarea = document.getElementById("text" + id);
+        if (text != null && textarea != null) {
+          text.style.display = "block";
+          textarea.style.display = "none";
+        }
+      }
+      return;
+    }
+  };
+
+  // edit item
+  const editItem = (id: any) => {
+    //show text area
+    // set text display none and text area display block
+    const text = document.getElementById("textvalue" + id);
+    const textarea = document.getElementById("text" + id);
+    if (text != null && textarea != null) {
+      text.style.display = "none";
+      textarea.style.display = "block";
+    }
+  };
+
+  const cancelCopy = (id: any) => {
+    // hide text area and show text
+    const text = document.getElementById("textvalue" + id);
+    const textarea = document.getElementById("text" + id);
+    if (text != null && textarea != null) {
+      text.style.display = "block";
+      textarea.style.display = "none";
+    }
+  };
+
+  // save copy to fav
+  const saveCopyToFav = async (id: any, isSaved: any) => {
+    const response = await fetch(
+      "/api/getcopy/productdescription/savecopytofav",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: id,
+          isSaved: isSaved,
+        }),
+      }
+    );
+    const data = await response.json();
+    if (data.status == "success" && data.act == "save") {
+      toast("Copy Marked As Fav", {
+        hideProgressBar: true,
+        autoClose: 2000,
+        type: "success",
+      });
+      router.replace(router.asPath);
+    } else if (data.status == "success" && data.act == "unsave") {
+      toast("Copy Unmarked As Fav", {
+        hideProgressBar: true,
+        autoClose: 2000,
+        type: "success",
+      });
+      router.replace(router.asPath);
+    }
+
+    return;
+  };
+
+  const deleteCopy = async (id: any) => {
+    const response = await fetch("/api/getcopy/productdescription/deletecopy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: id,
+      }),
+    });
+    const data = await response.json();
+    if (data.status == "success" && data.act == "delete") {
+      toast("Copy Deleted", {
+        hideProgressBar: true,
+        autoClose: 2000,
+        type: "success",
+      });
+      // refresh page withouth reloading
+      router.replace(router.asPath);
+    }
+    return;
   };
 
   return (
@@ -107,15 +295,21 @@ function Productdescription({ copy }: any) {
           </Link>
           <div className="w-96 rounded-xl ml-auto">
             <input
-              id="company-name"
+              id="doctitle"
+              name="doctitle"
+              value={doctitle}
+              onChange={(e) => setDoctitle(e.target.value)}
               className="form-input w-full"
               type="text"
               placeholder="Untitled Document"
             />
           </div>
           <div className="flex items-center justify-between ml-4">
-            <button className="font-bold btn bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white ml-auto w-full">
-              Save This Response For Feature
+            <button
+              onClick={handletitle}
+              className="font-bold btn bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white ml-auto w-full"
+            >
+              Save Title for Batter Understanding
             </button>
           </div>
         </div>
@@ -142,6 +336,8 @@ function Productdescription({ copy }: any) {
                         name="productname"
                         className="form-input w-full"
                         type="text"
+                        value={productname}
+                        onChange={(e) => setProductname(e.target.value)}
                       />
                     </div>
                     <div>
@@ -155,9 +351,13 @@ function Productdescription({ copy }: any) {
                       <textarea
                         id="productcharacteristics"
                         name="productcharacteristics"
+                        value={productcharacteristics}
                         className="form-input w-full"
                         rows={4}
                         cols={4}
+                        onChange={(e) =>
+                          setProductcharacteristics(e.target.value)
+                        }
                       />
                     </div>
                     <div>
@@ -165,16 +365,26 @@ function Productdescription({ copy }: any) {
                         className="block text-sm font-medium mb-1"
                         htmlFor="country"
                       >
-                        Country <span className="text-rose-500">*</span>
+                        Tone of voice <span className="text-rose-500">*</span>
                       </label>
                       <select
-                        id="country"
-                        name="country"
+                        id="toneofvoice"
+                        name="toneofvoice"
                         className="form-select w-full"
+                        value={toneofvoice}
+                        onChange={(e) => setToneofvoice(e.target.value)}
                       >
-                        <option>USA</option>
-                        <option>Italy</option>
-                        <option>United Kingdom</option>
+                        <option>Excited</option>
+                        <option>Professional</option>
+                        <option>Encouraging</option>
+                        <option>Informative</option>
+                        <option>Funny</option>
+                        <option>Dramatic</option>
+                        <option>Witty</option>
+                        <option>Sarcastic</option>
+                        <option>Engaging</option>
+                        <option>Relaxed</option>
+                        <option>Creative</option>
                       </select>
                     </div>
                   </div>
@@ -197,59 +407,117 @@ function Productdescription({ copy }: any) {
         <div className="p-2 w-full md:w-1/1 border-r-2 h-[calc(100vh-5.75rem)] sticky top-16 overflow-y-scroll no-scrollbar overscroll-contain">
           <div className="pt-4">
             {/* items */}
-            {Array.isArray(copy) && (
+            {Array.isArray(formattedCopy) && (
               <div className="pt-2">
-                {copy.map((item, index) => (
+                {formattedCopy.map((item, index) => (
                   <div
                     key={item.id}
                     className="flex items-start px-8 mb-4 last:mb-0"
                   >
                     <div className="font-bold text-sm bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white p-3 rounded-lg rounded-tl-none border border-transparent shadow-md mb-1">
-                      <div id={item.id}>{item.text}</div>
-                      <div className="flex pl-96 pt-4 justify-items-end justify-between">
-                        <svg
-                          onClick={() => copyItem(item.text)}
-                          className="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                          />
-                        </svg>
+                      <div id={`text${item.id}`} style={{ display: "none" }}>
+                        <div className="flex items-center justify-between">
+                          <textarea
+                            id={`textarea${item.id}`}
+                            className="form-input w-full"
+                            onChange={(e) => setEdit(e.target.value)}
+                            rows={16}
+                          >
+                            {item.text}
+                          </textarea>
+                        </div>
+                        <div className="flex pt-2 items-center justify-between">
+                          <div className="w-full">
+                            <button
+                              onClick={() => saveCopy(item.id)}
+                              className="font-bold text-white rounded-xl text-lg btn bg-indigo-500 ml-auto w-full"
+                            >
+                              Save Copy
+                            </button>
+                          </div>
+                          <div className="w-full pl-2">
+                            <button
+                              onClick={() => cancelCopy(item.id)}
+                              className="font-bold text-white rounded-xl text-lg btn bg-indigo-500 ml-auto w-full"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div id={`textvalue${item.id}`}>{item.text}</div>
+                      <div className="flex pt-4 justify-items-end justify-between">
+                        {/* add time also */}
+
+                        <div className="flex rounded-sm text-slate-400 justify-center bg-white w-full">
+                          {item.numWords} words / {item.numCharacters}{" "}
+                          characters , {item.createdAt}
+                        </div>
+                        <div className="flex pl-4 justify-between w-full">
+                          <svg
+                            onClick={() => copyItem(item.text)}
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <svg
+                            className="w-6 h-6"
+                            onClick={() => editItem(item.id)}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                          <svg
+                            className="w-6 h-6"
+                            onClick={() => deleteCopy(item.id)}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                          {/* if isSaved true make fill currentColor else*/}
+                          <svg
+                            className="w-6 h-6"
+                            onClick={() => saveCopyToFav(item.id, item.isSaved)}
+                            {...(item.isSaved == "true"
+                              ? { fill: "currentColor" }
+                              : { fill: "none" })}
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                            />
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -269,26 +537,83 @@ export default Productdescription;
 export async function getServerSideProps(context: any) {
   //get page id from the url use next router
   const proid = context.query.proid;
-
+  if (proid === "blank") {
+    return {
+      props: {
+        copy: [],
+        productdescription: [],
+      },
+    };
+  }
   console.log(proid);
 
   if (proid) {
-    //get the data from the prisma table copy all copy that have ide proid
-    const copy = await prisma.copygen.findMany({
+    // get document title data from prisma toolgen table
+    const toolgen = await prisma.toolgen.findMany({
       select: {
         id: true,
-        text: true,
+        title: true,
+      },
+      where: {
+        id: parseInt(proid),
+      },
+    });
+
+    // get product description data from prisma
+    const productdescription = await prisma.productdescription.findMany({
+      select: {
+        id: true,
+        productname: true,
+        productcharacteristics: true,
+        toneofvoice: true,
       },
       where: {
         toolgenId: parseInt(proid),
       },
     });
+    //get the data from the prisma table copy all copy that have ide proid
+    let copy = await prisma.copygen.findMany({
+      select: {
+        id: true,
+        text: true,
+        isSaved: true,
+        createdAt: true,
+      },
+      where: {
+        toolgenId: parseInt(proid),
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    //format the date and time also use the map function to loop through the array
 
-    console.log(copy);
+    const formattedCopy = copy.map((item) => {
+      const words = item.text?.split(" ");
+      const numWords = words?.length;
+      const numCharacters = item.text?.length;
+      //calculate text words and characters and add it to the object
+      return {
+        ...item,
+        createdAt: new Date(item.createdAt).toLocaleString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric",
+        }),
+        numWords,
+        numCharacters,
+      };
+    });
 
     return {
       props: {
-        copy,
+        formattedCopy,
+        productdescription,
+        toolgen,
       },
     };
   }

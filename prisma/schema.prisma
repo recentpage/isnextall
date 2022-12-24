@@ -89,20 +89,32 @@ model Tools {
 }
 
 model Toolgen {
-    id        Int       @id @default(autoincrement())
-    title     String?
-    toolId    Int
-    spaceId   Int
-    createdAt DateTime  @default(now())
-    tool      Tools     @relation(fields: [toolId], references: [id], onDelete: Cascade)
-    space     Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-    Copygen   Copygen[]
+    id                 Int                  @id @default(autoincrement())
+    title              String?
+    toolId             Int
+    spaceId            Int
+    createdAt          DateTime             @default(now())
+    tool               Tools                @relation(fields: [toolId], references: [id], onDelete: Cascade)
+    space              Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+    Copygen            Copygen[]
+    Productdescription Productdescription[]
 }
 
 model Copygen {
     id        Int      @id @default(autoincrement())
     text      String?
+    isSaved   String?  @default("false")
     toolgenId Int
     createdAt DateTime @default(now())
     toolgen   Toolgen  @relation(fields: [toolgenId], references: [id], onDelete: Cascade)
+}
+
+model Productdescription {
+    id                     Int      @id @default(autoincrement())
+    productname            String?
+    productcharacteristics String?
+    toneofvoice            String?
+    toolgenId              Int      @unique
+    createdAt              DateTime @default(now())
+    toolgen                Toolgen  @relation(fields: [toolgenId], references: [id], onDelete: Cascade)
 }
