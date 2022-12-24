@@ -7,18 +7,21 @@ import PaginationNumeric from "../../../components/partials/PaginationNumeric";
 import Sidebar from "../../../components/Sidebar/Sidebar";
 import Createspacemodal from "../../../components/models/Createspacemodal";
 import { PrismaClient } from "@prisma/client";
+import Link from "next/link";
 
 export default function Space({ saved }: any) {
   console.log(saved);
   const router = useRouter();
+  //get base url
+  const [baseurl, setBaseurl] = React.useState("");
+  React.useEffect(() => {
+    setBaseurl(window.location.origin);
+  }, []);
+
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [totalItems, setTotalItems] = React.useState(0);
-
-  const handleClick = () => {
-    setIsModalOpen(true);
-  };
 
   React.useEffect(() => {
     setTotalItems(saved.length);
@@ -26,7 +29,6 @@ export default function Space({ saved }: any) {
 
   const filteredJobs = saved.filter((job: any) => {
     const jobTitle = job.title.toLowerCase();
-
     return jobTitle.includes(searchTerm.toLowerCase());
   });
 
@@ -58,12 +60,11 @@ export default function Space({ saved }: any) {
                 >
                   <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
                 </svg>
-                <span
-                  className="hidden font-semibold text-lg xs:block ml-2"
-                  onClick={handleClick}
-                >
-                  Create Space
-                </span>
+                <Link href={`${baseurl}/tools`}>
+                  <span className="hidden font-semibold text-lg xs:block ml-2">
+                    Create Space
+                  </span>
+                </Link>
               </button>
             </div>
             <Createspacemodal
@@ -131,7 +132,7 @@ export default function Space({ saved }: any) {
                         company=""
                         toolname={fields["tool"].name}
                         type={fields.type}
-                        fav={fields.fav}
+                        isSaved={fields.isSaved}
                       />
                     );
                   })}

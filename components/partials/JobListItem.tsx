@@ -122,12 +122,16 @@ function JobListItem(props: any) {
         {/* Right side */}
         <div className="flex">
           <div className="text-sm text-slate-500 italic whitespace-nowrap">
-            <button
-              className="btn bg-orange-500 text-white"
-              onClick={() => selectSpace(props.id)}
-            >
-              Select
-            </button>
+            {props.selected == "true" ? (
+              <button className="btn bg-green-500 text-white">Selected</button>
+            ) : (
+              <button
+                className="btn bg-orange-500 text-white"
+                onClick={() => selectSpace(props.id)}
+              >
+                Select
+              </button>
+            )}
           </div>
         </div>
       </div>

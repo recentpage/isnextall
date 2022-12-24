@@ -52,6 +52,32 @@ function JobListItem(props: any) {
     }
   };
 
+  const marksaveSpace = async (id: any) => {
+    try {
+      const res = await fetch(`/api/spaces/makesaved/${id}`, {
+        method: "PUT",
+      });
+      const data = await res.json();
+      if (data.error) {
+        toast(data.error, {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "error",
+        });
+      }
+      if (data.status === "1") {
+        toast("Genration marked as saved", {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "success",
+        });
+        router.replace(router.asPath);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const editSpacename = async (id: any) => {
     const spacename: any = document.getElementById(`spacename${id}`);
     const spacenameinput: any = document.getElementById(`spacenameinput${id}`);
@@ -197,6 +223,7 @@ function JobListItem(props: any) {
           </button>
 
           <button
+            onClick={() => marksaveSpace(props.id)}
             className={`${
               props.fav
                 ? "text-amber-500"
@@ -205,12 +232,22 @@ function JobListItem(props: any) {
           >
             <span className="sr-only">Bookmark</span>
             <svg
-              className="w-3 h-4 fill-current"
-              width="12"
-              height="16"
+              className="w-6 h-6"
+              {...(props.isSaved == "true"
+                ? { fill: "currentColor" }
+                : { fill: "none" })}
+              {...(props.isSaved == "true"
+                ? { stroke: "green" }
+                : { stroke: "none" })}
+              viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path d="M2 0C.9 0 0 .9 0 2v14l6-3 6 3V2c0-1.1-.9-2-2-2H2Z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+              />
             </svg>
           </button>
           <button

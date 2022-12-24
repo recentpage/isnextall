@@ -133,7 +133,7 @@ export default function Spaces({ allfields }: any) {
                         company=""
                         date={fields.date}
                         type={fields.type}
-                        fav={fields.fav}
+                        selected={fields.selected}
                       />
                     );
                   })}
@@ -162,6 +162,7 @@ export async function getServerSideProps({ req, res }: any) {
       select: {
         id: true,
         name: true,
+        selected: true,
       },
       where: {
         // @ts-ignore

@@ -92,6 +92,7 @@ model Tools {
 model Toolgen {
     id                 Int                  @id @default(autoincrement())
     title              String?
+    isSaved            String?              @default("false")
     toolId             Int
     spaceId            Int
     createdAt          DateTime             @default(now())
