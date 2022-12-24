@@ -6,6 +6,13 @@ import { PrismaClient } from "@prisma/client";
 
 export default function Tools({ alltools }: any) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  //get base url
+  useEffect(() => {
+    const url = window.location.href;
+    const urlArray = url.split("/");
+    setBaseUrl(urlArray[0] + "//" + urlArray[2]);
+  }, []);
   const tools = alltools;
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -215,7 +222,7 @@ export default function Tools({ alltools }: any) {
                         <div>
                           <a
                             className="text-sm font-medium text-indigo-500 hover:text-indigo-600"
-                            href={`/tools/${tool.slug}`}
+                            href={baseUrl + "/" + tool.slug}
                           >
                             Explore -&gt;
                           </a>

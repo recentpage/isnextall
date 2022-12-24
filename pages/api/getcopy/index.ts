@@ -4,7 +4,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 const openai = async (req: NextApiRequest, res: NextApiResponse) => {
   const { productname, productcharacteristics } = req.body;
   const configuration = new Configuration({
-    apiKey: "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",
+    organization: "org-irggoJlk0XzpTp72XHXOrFjM",
+    apiKey: process.env.OPENAI_API_KEY,
   });
   const api = new OpenAIApi(configuration);
   const prompt = `Generate a product description for a product with the following attributes: product name = '${productname}', product description = '${productcharacteristics}'. Make sure to include details about the product's features and benefits. genrate 3 variations of the product description.`;

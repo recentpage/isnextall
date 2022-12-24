@@ -1,13 +1,22 @@
 import { OpenAIApi, Configuration } from "openai";
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
+import { getSession } from "next-auth/react";
 
 const prisma = new PrismaClient();
 
 const openai = async (req: NextApiRequest, res: NextApiResponse) => {
+  const session = await getSession({ req });
+  if (!session) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  //@ts-ignore
+  const userId = session.user?.id;
   const { proid, toneofvoice, productname, productcharacteristics } = req.body;
   const configuration = new Configuration({
-    apiKey: "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",
+    organization: "org-irggoJlk0XzpTp72XHXOrFjM",
+    apiKey: process.env.OPENAI_API_KEY,
   });
   const api = new OpenAIApi(configuration);
   const prompt = `Generate a product description for a product with the following attributes: product name = '${productname}', product description = '${productcharacteristics}'. Make sure to include details about the product's features and benefits.use Tone of voice = '${toneofvoice}'. genrate 3 variations of the product description.`;
@@ -45,6 +54,7 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
             title: "Untitled",
             toolId: 1,
             spaceId: 1,
+            userId: userId,
           },
         });
         if (toolgen.id && productname && productcharacteristics) {
@@ -54,6 +64,7 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
               productcharacteristics: productcharacteristics,
               toneofvoice: toneofvoice,
               toolgenId: toolgen.id,
+              userId: userId,
             },
           });
         }

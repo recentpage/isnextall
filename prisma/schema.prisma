@@ -46,6 +46,7 @@ model User {
     Fields             Fields[]
     Tools              Tools[]
     Productdescription Productdescription[]
+    Toolgen            Toolgen[]
 }
 
 model VerificationToken {
@@ -102,9 +103,11 @@ model Toolgen {
     isSaved            String?              @default("false")
     toolId             Int
     spaceId            Int
+    userId             String
     createdAt          DateTime             @default(now())
     tool               Tools                @relation(fields: [toolId], references: [id], onDelete: Cascade)
     space              Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+    user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
     Copygen            Copygen[]
     Productdescription Productdescription[]
 }
