@@ -129,7 +129,7 @@ export default function Spaces({ allfields }: any) {
                         id={fields.id}
                         image={"/company-icon-01.svg"}
                         name={fields.name}
-                        link=""
+                        link="spaces/space"
                         company=""
                         date={fields.date}
                         type={fields.type}
