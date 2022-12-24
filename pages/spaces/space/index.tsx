@@ -24,6 +24,12 @@ export default function Space({ saved }: any) {
     setTotalItems(saved.length);
   }, [saved]);
 
+  const filteredJobs = saved.filter((job: any) => {
+    const jobTitle = job.title.toLowerCase();
+
+    return jobTitle.includes(searchTerm.toLowerCase());
+  });
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
@@ -40,7 +46,7 @@ export default function Space({ saved }: any) {
               {/* Left: Title */}
               <div className="mb-4 sm:mb-0">
                 <h1 className="text-2xl md:text-3xl text-slate-800 font-bold">
-                  Search For Your Spaces ✨
+                  My Genrations ✨
                 </h1>
               </div>
 
@@ -106,7 +112,7 @@ export default function Space({ saved }: any) {
                 {/* Jobs header */}
                 <div className="flex justify-between items-center mb-4">
                   <div className="text-sm text-slate-500 italic">
-                    Showing {totalItems} spaces
+                    Showing {totalItems} Genrations
                   </div>
                   {/* Sort */}
                   <div className="text-sm"></div>
@@ -114,12 +120,12 @@ export default function Space({ saved }: any) {
 
                 {/* Jobs list */}
                 <div className="space-y-2">
-                  {saved.map((fields: any) => {
+                  {filteredJobs.map((fields: any) => {
                     return (
                       <JobListItem2
                         key={fields.id}
                         id={fields.id}
-                        image={"/company-icon-01.svg"}
+                        image={fields["tool"].imageUrl}
                         name={fields.title}
                         link=""
                         company=""
@@ -158,6 +164,7 @@ export async function getServerSideProps({ req, res }: any) {
         tool: {
           select: {
             name: true,
+            imageUrl: true,
           },
         },
       },
