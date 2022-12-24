@@ -2,9 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
-import { useSession } from "next-auth/react";
+import { useSession, getSession } from "next-auth/react";
+import { PrismaClient } from "@prisma/client";
 
-function Productdescription() {
+const prisma = new PrismaClient();
+
+function Productdescription({ copy }: any) {
   const session = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -194,18 +197,18 @@ function Productdescription() {
         <div className="p-2 w-full md:w-1/1 border-r-2 h-[calc(100vh-5.75rem)] sticky top-16 overflow-y-scroll no-scrollbar overscroll-contain">
           <div className="pt-4">
             {/* items */}
-            {Array.isArray(copys) && (
+            {Array.isArray(copy) && (
               <div className="pt-2">
-                {copys.map((text, index) => (
+                {copy.map((item, index) => (
                   <div
-                    key={index}
+                    key={item.id}
                     className="flex items-start px-8 mb-4 last:mb-0"
                   >
                     <div className="font-bold text-sm bg-gradient-to-r from-green-400 to-blue-500 hover:from-pink-500 hover:to-yellow-500 text-white p-3 rounded-lg rounded-tl-none border border-transparent shadow-md mb-1">
-                      <div id="flexi">{text}</div>
+                      <div id={item.id}>{item.text}</div>
                       <div className="flex pl-96 pt-4 justify-items-end justify-between">
                         <svg
-                          onClick={() => copyItem(text)}
+                          onClick={() => copyItem(item.text)}
                           className="w-6 h-6"
                           fill="none"
                           stroke="currentColor"
@@ -261,3 +264,32 @@ function Productdescription() {
 }
 
 export default Productdescription;
+
+// make get server side props to get the data from the api also use authenication
+export async function getServerSideProps(context: any) {
+  //get page id from the url use next router
+  const proid = context.query.proid;
+
+  console.log(proid);
+
+  if (proid) {
+    //get the data from the prisma table copy all copy that have ide proid
+    const copy = await prisma.copygen.findMany({
+      select: {
+        id: true,
+        text: true,
+      },
+      where: {
+        toolgenId: parseInt(proid),
+      },
+    });
+
+    console.log(copy);
+
+    return {
+      props: {
+        copy,
+      },
+    };
+  }
+}
