@@ -1,9 +1,71 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
 function JobListItem(props: any) {
+  const [spacenames, setSpacename] = useState("");
+  console.log(spacenames);
   const router = useRouter();
+  const savespacename = async (id: any) => {
+    const spacenameinput: any = document.getElementById(`spacenameinput${id}`);
+    const spacename: any = document.getElementById(`spacename${id}`);
+    const spacenameinp: any = document.getElementById(`spacenameinp${id}`);
+    try {
+      const res = await fetch(`/api/spaces/editspacename/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: spacenameinp.value,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        toast(data.error, {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "error",
+        });
+      }
+      if (data.status === "1") {
+        toast("Space updated", {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "success",
+        });
+        spacenameinput.style.display = "none";
+        spacename.style.display = "block";
+
+        router.replace(router.asPath);
+      }
+    } catch (error) {
+      toast(
+        "Error updating space. Please try again later or contact support.",
+        {
+          hideProgressBar: true,
+          autoClose: 2000,
+          type: "error",
+        }
+      );
+    }
+  };
+
+  const editSpacename = async (id: any) => {
+    const spacename: any = document.getElementById(`spacename${id}`);
+    const spacenameinput: any = document.getElementById(`spacenameinput${id}`);
+    spacename.style.display = "none";
+    spacenameinput.style.display = "block";
+  };
+
+  const cencelbtn = async (id: any) => {
+    const spacename: any = document.getElementById(`spacename${id}`);
+    const spacenameinput: any = document.getElementById(`spacenameinput${id}`);
+    spacename.style.display = "block";
+    spacenameinput.style.display = "none";
+  };
+
   const deleteSpace = async (id: any) => {
     if (!confirm("Are you sure you want to delete this space?")) {
       return;
@@ -43,7 +105,39 @@ function JobListItem(props: any) {
               alt={props.company}
             />
           </div>
-          <div>
+          <div
+            id={`spacenameinput${props.id}`}
+            className="flex "
+            style={{ display: "none" }}
+          >
+            <input
+              type="text"
+              id={`spacenameinp${props.id}`}
+              name={`spacenameinp${props.id}`}
+              className="form-input w-full"
+              onChange={(e) => setSpacename(e.target.value)}
+              defaultValue={props.name}
+            />
+            <div className="flex justify-end space-x-2 mt-2">
+              <button
+                className="btn btn-sm btn-primary"
+                name={`savebtn${props.id}`}
+                id={`savebtn${props.id}`}
+                onClick={() => savespacename(props.id)}
+              >
+                save
+              </button>
+              <button
+                className="btn btn-sm btn-secondary"
+                name={`cancelbtn${props.id}`}
+                id={`cancelbtn${props.id}`}
+                onClick={() => cencelbtn(props.id)}
+              >
+                cancel
+              </button>
+            </div>
+          </div>
+          <div id={`spacename${props.id}`}>
             <Link
               className="inline-flex font-semibold text-slate-800"
               href={props.link}
@@ -74,6 +168,34 @@ function JobListItem(props: any) {
               {props.type}
             </div>
           )}
+          {/* add edit svg width button */}
+          <button
+            onClick={() => editSpacename(props.id)}
+            className={`${
+              props.fav
+                ? "text-amber-500"
+                : "text-slate-300 hover:text-slate-400"
+            }`}
+          >
+            <span className="sr-only">Edit</span>
+            <svg
+              className="w-5 h-5 fill-current"
+              width="12"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
+          </button>
+
           <button
             className={`${
               props.fav
