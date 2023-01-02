@@ -100,20 +100,32 @@ function JobListItem(props: any) {
     spacenameinput.style.display = "none";
   };
 
-  const deleteSpace = async (id: any) => {
-    if (!confirm("Are you sure you want to delete this space?")) {
+  const deleteGenration = async (id: any) => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this genration? if you delete this genration you will not be able to recover it.all of your this genration data will be deleted."
+      )
+    ) {
       return;
     }
     try {
-      const res = await fetch(`/api/spaces/${id}`, {
+      const res = await fetch(`/api/spaces/deletecopytool/${id}`, {
         method: "DELETE",
       });
       console.log(res);
+      const data = await res.json();
       if (!res.ok) {
         alert("Something went wrong");
         throw new Error("Something went wrong");
       } else if (res.ok) {
-        router.push("/spaces");
+        if (data.status === "success") {
+          toast("Genration deleted", {
+            hideProgressBar: true,
+            autoClose: 2000,
+            type: "success",
+          });
+          router.replace(router.asPath);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -174,7 +186,7 @@ function JobListItem(props: any) {
           <div id={`spacename${props.id}`}>
             <Link
               className="inline-flex font-semibold text-slate-800"
-              href={props.link}
+              href={props.baseurl + "/" + props.slug}
             >
               {props.name}
             </Link>
@@ -256,7 +268,7 @@ function JobListItem(props: any) {
             </svg>
           </button>
           <button
-            onClick={() => deleteSpace(props.id)}
+            onClick={() => deleteGenration(props.id)}
             className={`${
               props.fav
                 ? "text-amber-500"

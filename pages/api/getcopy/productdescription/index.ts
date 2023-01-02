@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
 import { getSession } from "next-auth/react";
 import checkSpace from "../../checkspace";
+import getSug from "../../getslug";
 
 const prisma = new PrismaClient();
 
@@ -18,6 +19,12 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
 
   //get space id from pages/api/checkspace.ts import
   const spaceId = await checkSpace(req, res);
+
+  //get slug from pages/api/getslug.ts import
+  const slug = await getSug(req, res, 1);
+  //remove this last /blank from slug and
+  const makenewsug = slug?.split("/");
+  const newSlug = makenewsug?.slice(0, makenewsug.length - 1).join("/");
 
   const configuration = new Configuration({
     organization: "org-irggoJlk0XzpTp72XHXOrFjM",
@@ -63,6 +70,15 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
           },
         });
         if (toolgen.id && productname && productcharacteristics) {
+          // upadte the slug
+          const updateSlug = await prisma.toolgen.update({
+            where: {
+              id: toolgen.id,
+            },
+            data: {
+              slug: newSlug + "/" + toolgen.id,
+            },
+          });
           const addProductdescription = await prisma.productdescription.create({
             data: {
               productname: productname,

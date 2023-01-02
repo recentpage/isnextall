@@ -129,8 +129,9 @@ export default function Space({ saved }: any) {
                         id={fields.id}
                         image={fields["tool"].imageUrl}
                         name={fields.title}
-                        link=""
                         company=""
+                        baseurl={baseurl}
+                        slug={fields.slug}
                         toolname={fields["tool"].name}
                         type={fields.type}
                         isSaved={fields.isSaved}
@@ -171,6 +172,7 @@ export async function getServerSideProps({ req, res }: any) {
           select: {
             name: true,
             imageUrl: true,
+            slug: true,
           },
         },
       },
