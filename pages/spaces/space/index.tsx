@@ -8,6 +8,7 @@ import Sidebar from "../../../components/Sidebar/Sidebar";
 import Createspacemodal from "../../../components/models/Createspacemodal";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import checkSpace from "../../api/checkspace";
 
 export default function Space({ saved }: any) {
   console.log(saved);
@@ -157,9 +158,13 @@ export async function getServerSideProps({ req, res }: any) {
   // READ all notes from DB
   const saved = "";
   if (session) {
+    //get space id from checkspace.ts
+    const spaceId = await checkSpace(req, res);
+    console.log("spaceId", spaceId);
+
     const savedget = await prisma.toolgen.findMany({
       where: {
-        spaceId: 1,
+        spaceId: spaceId,
       },
       include: {
         tool: {

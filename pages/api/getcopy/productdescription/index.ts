@@ -2,6 +2,7 @@ import { OpenAIApi, Configuration } from "openai";
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
 import { getSession } from "next-auth/react";
+import checkSpace from "../../checkspace";
 
 const prisma = new PrismaClient();
 
@@ -14,6 +15,10 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
   //@ts-ignore
   const userId = session.user?.id;
   const { proid, toneofvoice, productname, productcharacteristics } = req.body;
+
+  //get space id from pages/api/checkspace.ts import
+  const spaceId = await checkSpace(req, res);
+
   const configuration = new Configuration({
     organization: "org-irggoJlk0XzpTp72XHXOrFjM",
     apiKey: process.env.OPENAI_API_KEY,
@@ -53,7 +58,7 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
           data: {
             title: "Untitled",
             toolId: 1,
-            spaceId: 1,
+            spaceId: spaceId,
             userId: userId,
           },
         });
