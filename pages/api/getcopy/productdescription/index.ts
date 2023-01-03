@@ -76,6 +76,7 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
               id: toolgen.id,
             },
             data: {
+              //@ts-ignore
               slug: newSlug + "/" + toolgen.id,
             },
           });
