@@ -3,11 +3,10 @@ import { getSession } from "next-auth/react";
 
 const prisma = new PrismaClient();
 
-export default async function checkSpace(req: any, res: any) {
-  const session = await getSession({ req });
+export default async function checkSpace(context: any) {
+  const session = await getSession(context);
   if (!session) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
+    return null;
   }
   //@ts-ignore
   const userId = session.user.id;
@@ -23,15 +22,13 @@ export default async function checkSpace(req: any, res: any) {
   if (space.length > 0) {
     return space[0].id;
   } else {
-    if (req.method === "POST") {
-      const newSpace = await prisma.space.create({
-        data: {
-          name: "My first space",
-          userId: userId,
-          selected: "true",
-        },
-      });
-      return newSpace.id;
-    }
+    const newSpace = await prisma.space.create({
+      data: {
+        name: "My first space",
+        userId: userId,
+        selected: "true",
+      },
+    });
+    return newSpace.id;
   }
 }

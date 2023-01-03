@@ -541,6 +541,16 @@ export default Productdescription;
 
 // make get server side props to get the data from the api also use authenication
 export async function getServerSideProps(context: any) {
+  //make validation for the user
+  const session = await getSession(context);
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
   //get page id from the url use next router
   const proid = context.query.proid;
   if (proid === "blank") {

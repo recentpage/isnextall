@@ -11,7 +11,6 @@ import Link from "next/link";
 import checkSpace from "../../api/checkspace";
 
 export default function Space({ saved }: any) {
-  console.log(saved);
   const router = useRouter();
   //get base url
   const [baseurl, setBaseurl] = React.useState("");
@@ -153,19 +152,17 @@ export default function Space({ saved }: any) {
   );
 }
 
-export async function getServerSideProps({ req, res }: any) {
-  const session = await getSession({ req });
+export async function getServerSideProps(context: any) {
+  const session = await getSession(context);
   const prisma = new PrismaClient();
   // READ all notes from DB
   const saved = "";
   if (session) {
     //get space id from checkspace.ts
-    const spaceId = await checkSpace(req, res);
-    console.log("spaceId", spaceId);
-
+    const spaceId: any = context.query.spaceid;
     const savedget = await prisma.toolgen.findMany({
       where: {
-        spaceId: spaceId,
+        spaceId: parseInt(spaceId),
       },
       include: {
         tool: {
@@ -193,8 +190,6 @@ export async function getServerSideProps({ req, res }: any) {
         }),
       };
     });
-
-    console.log(saved);
 
     return {
       props: {
