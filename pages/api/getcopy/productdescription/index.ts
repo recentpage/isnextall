@@ -61,7 +61,7 @@ const openai = async (req: NextApiRequest, res: NextApiResponse) => {
       let act = "";
       let proidnew = "";
       if (proid === "blank") {
-        const toolgen = await prisma.toolgen.create({
+        const toolgen:any = await prisma.toolgen.create({
           data: {
             title: "Untitled",
             toolId: 1,
