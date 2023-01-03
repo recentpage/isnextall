@@ -8,7 +8,6 @@ import Sidebar from "../../../components/Sidebar/Sidebar";
 import Createspacemodal from "../../../components/models/Createspacemodal";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
-import checkSpace from "../../api/checkspace";
 
 export default function Space({ saved }: any) {
   const router = useRouter();
